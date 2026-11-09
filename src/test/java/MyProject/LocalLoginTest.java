@@ -1,102 +1,91 @@
+
 package MyProject;
+
 import java.io.File;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
 public class LocalLoginTest {
-	 WebDriver driver;
 
-	    // Open the login page before every test
-	    @BeforeMethod
-	    public void setUp() {
+    WebDriver driver;
 
-	        driver = new ChromeDriver();
+    @BeforeMethod
+    public void setUp() {
 
-	        driver.manage().window().maximize();
+        ChromeOptions options = new ChromeOptions();
 
-	        String page = new File("webpage/login.html")
-	                .getAbsoluteFile()
-	                .toURI()
-	                .toString();
+        // Required for GitHub Actions
+        options.addArguments("--headless=new");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--window-size=1920,1080");
 
-	        driver.get(page);
-	    }
+        driver = new ChromeDriver(options);
 
-	    // Test Case 1: Valid Login
-	    @Test
-	    public void validLoginTest() {
+        String page = new File("webpage/login.html")
+                .getAbsoluteFile()
+                .toURI()
+                .toString();
 
-	        driver.findElement(By.id("username"))
-	                .sendKeys("student");
+        driver.get(page);
+    }
 
-	        driver.findElement(By.id("password"))
-	                .sendKeys("12345");
+    @Test
+    public void validLoginTest() {
 
-	        driver.findElement(By.id("loginButton"))
-	                .click();
+        driver.findElement(By.id("username")).sendKeys("student");
+        driver.findElement(By.id("password")).sendKeys("12345");
 
-	        String message = driver.findElement(By.id("message"))
-	                .getText();
+        driver.findElement(By.id("loginButton")).click();
 
-	        System.out.println("Valid Login: " + message);
+        String message = driver.findElement(By.id("message")).getText();
 
-	        Assert.assertEquals(message, "Login Successful");
-	    }
+        Assert.assertEquals(message, "Login Successful");
+    }
 
-	    // Test Case 2: Invalid Login
-	    @Test
-	    public void invalidLoginTest() {
+    @Test
+    public void invalidLoginTest() {
 
-	        driver.findElement(By.id("username"))
-	                .sendKeys("wrong");
+        driver.findElement(By.id("username")).sendKeys("wrong");
+        driver.findElement(By.id("password")).sendKeys("wrong");
 
-	        driver.findElement(By.id("password"))
-	                .sendKeys("wrong");
+        driver.findElement(By.id("loginButton")).click();
 
-	        driver.findElement(By.id("loginButton"))
-	                .click();
+        String message = driver.findElement(By.id("message")).getText();
 
-	        String message = driver.findElement(By.id("message"))
-	                .getText();
+        Assert.assertEquals(
+            message,
+            "Invalid Username or Password"
+        );
+    }
 
-	        System.out.println("Invalid Login: " + message);
+    @Test
+    public void emptyLoginTest() {
 
-	        Assert.assertEquals(
-	                message,
-	                "Invalid Username or Password"
-	        );
-	    }
+        driver.findElement(By.id("loginButton")).click();
 
-	    // Test Case 3: Empty Login
-	    @Test
-	    public void emptyLoginTest() {
+        String message = driver.findElement(By.id("message")).getText();
 
-	        driver.findElement(By.id("loginButton"))
-	                .click();
+        Assert.assertEquals(
+            message,
+            "Invalid Username or Password"
+        );
+    }
 
-	        String message = driver.findElement(By.id("message"))
-	                .getText();
+    @AfterMethod
+    public void tearDown() {
 
-	        System.out.println("Empty Login: " + message);
-
-	        Assert.assertEquals(
-	                message,
-	                "Invalid Username or Password"
-	        );
-	    }
-
-	    // Close browser after every test
-	    @AfterMethod
-	    public void tearDown() {
-
-	        if (driver != null) {
-	            driver.quit();
-	        }
-	    }
-	}
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}
